@@ -1,135 +1,155 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TheMuiz อ่านออกเสียง</title>
-    <!-- Load Tailwind CSS for styling and responsiveness -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load ResponsiveVoice API for text-to-speech, with the provided API key -->
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=Negu9VLC"></script>
-    <style>
-        /* Set Inter font across the page */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a202c; /* Dark background color */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        /* Ensure status message area has a minimum height to prevent layout shifts */
-        #statusMessage {
-            min-height: 1.5rem; /* Minimum height for status message */
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheMuiz อ่านออกเสียง</title>
+    <!-- Load Tailwind CSS for styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load ResponsiveVoice API for text-to-speech, with the provided API key -->
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=Negu9VLC"></script>
+    <style>
+        /* Set Inter font across the page */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark background color */
+            display: flex;
+            flex-direction: column; /* Arrange items in a column */
+            justify-content: space-between; /* Distribute space between items */
+            align-items: center; /* Center items horizontally */
+            height: 100vh; /* Make body take full viewport height */
+            margin: 0;
+            padding: 1rem; /* Add some padding around the content */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            overflow: hidden; /* Prevent body from scrolling */
+        }
+        /* Ensure status message area has a minimum height to prevent layout shifts */
+        #statusMessage {
+            min-height: 1.5rem; /* Minimum height for status message */
+        }
+        /* Adjust textarea to allow internal scrolling if content overflows */
+        #speechText {
+            max-height: 50vh; /* Maximum height for the textarea, adjust as needed */
+            overflow-y: auto; /* Enable vertical scrolling within the textarea */
+            flex-grow: 1; /* Allow textarea to grow and fill available space */
+        }
+        /* Make the main content div flexible to fill available space */
+        .main-content-area {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Allow this div to grow and fill available space */
+            justify-content: center; /* Center content vertically within this div */
+            align-items: center;
+            width: 100%;
+            max-width: 28rem; /* Same as max-w-md in Tailwind */
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
+<body class="bg-gray-900 text-white">
 
-    <!-- Web page header section -->
-    <header class="text-center mb-8">
-        <h1 class="text-5xl font-extrabold text-white mb-2">TheMuiz</h1>
-        <h2 class="text-3xl font-semibold text-white">อ่านออกเสียง</h2>
-    </header>
+    <!-- Web page header section -->
+    <header class="text-center mb-4 mt-4">
+        <h1 class="text-5xl font-extrabold text-white mb-2">TheMuiz</h1>
+        <h2 class="text-3xl font-semibold text-white">อ่านออกเสียง</h2>
+    </header>
 
-    <!-- Main container for the application -->
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <!-- Text input area -->
-        <textarea
-            id="speechText"
-            class="w-full p-4 mb-4 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-            rows="8"
-            placeholder="พิมพ์ข้อความที่นี่เลยค่ะ..."
-        ></textarea>
+    <!-- Main container for the application -->
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-lg w-full main-content-area">
+        <!-- Text input area -->
+        <textarea
+            id="speechText"
+            class="w-full p-4 mb-4 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            rows="8"
+            placeholder="พิมพ์ข้อความที่นี่เลยค่ะ..."
+        ></textarea>
 
-        <!-- Status message display area -->
-        <p id="statusMessage" class="text-center text-gray-400 mb-6 text-sm"></p>
+        <!-- Status message display area -->
+        <p id="statusMessage" class="text-center text-gray-400 mb-6 text-sm"></p>
 
-        <!-- Buttons for actions -->
-        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <button
-                id="speakButton"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
-            >
-                อ่านออกเสียงเลย!
-            </button>
-            <button
-                id="clearButton"
-                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
-            >
-                ล้างข้อความ
-            </button>
-        </div>
-    </div>
+        <!-- Buttons for actions -->
+        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 w-full">
+            <button
+                id="speakButton"
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
+            >
+                อ่านออกเสียงเลย!
+            </button>
+            <button
+                id="clearButton"
+                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
+            >
+                ล้างข้อความ
+            </button>
+        </div>
+    </div>
 
-    <!-- Creator credit footer -->
-    <footer class="mt-8 text-gray-500 text-sm">
-        Creator: TheMuiz × หนูมะลิ
-    </footer>
+    <!-- Creator credit footer -->
+    <footer class="mt-4 mb-4 text-gray-500 text-sm">
+        Creator: TheMuiz × หนูมะลิ
+    </footer>
 
-    <script>
-        // When the web page finishes loading
-        document.addEventListener('DOMContentLoaded', () => {
-            // Get HTML elements and store them in variables
-            const speechText = document.getElementById('speechText'); // Text input field
-            const speakButton = document.getElementById('speakButton'); // Button to trigger speech
-            const clearButton = document.getElementById('clearButton'); // Button to clear text
-            const statusMessage = document.getElementById('statusMessage'); // Area to display status messages
+    <script>
+        // When the web page finishes loading
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get HTML elements and store them in variables
+            const speechText = document.getElementById('speechText'); // Text input field
+            const speakButton = document.getElementById('speakButton'); // Button to trigger speech
+            const clearButton = document.getElementById('clearButton'); // Button to clear text
+            const statusMessage = document.getElementById('statusMessage'); // Area to display status messages
 
-            // Set the text input field to be empty initially
-            speechText.value = "";
+            // Set the text input field to be empty initially
+            speechText.value = "";
 
-            // Add event listener for the "Speak Now!" button click
-            speakButton.addEventListener('click', () => {
-                // Check if ResponsiveVoice is ready
-                if (typeof responsiveVoice === 'undefined') {
-                    statusMessage.textContent = 'ResponsiveVoice ยังไม่พร้อมใช้งาน กรุณาลองใหม่ในอีกสักครู่ค่ะ';
-                    console.error('ResponsiveVoice library not loaded.');
-                    return; // Stop execution if not ready
-                }
+            // Add event listener for the "Speak Now!" button click
+            speakButton.addEventListener('click', () => {
+                // Check if ResponsiveVoice is ready
+                if (typeof responsiveVoice === 'undefined') {
+                    statusMessage.textContent = 'ResponsiveVoice ยังไม่พร้อมใช้งาน กรุณาลองใหม่ในอีกสักครู่ค่ะ';
+                    console.error('ResponsiveVoice library not loaded.');
+                    return; // Stop execution if not ready
+                }
 
-                // Get text from the input field and remove leading/trailing whitespace
-                const textToSpeak = speechText.value.trim();
+                // Get text from the input field and remove leading/trailing whitespace
+                const textToSpeak = speechText.value.trim();
 
-                // If there's no text to speak, display a warning
-                if (textToSpeak === '') {
-                    statusMessage.textContent = 'กรุณาพิมพ์ข้อความที่ต้องการให้อ่านก่อนนะคะ!';
-                    return; // Stop execution
-                }
+                // If there's no text to speak, display a warning
+                if (textToSpeak === '') {
+                    statusMessage.textContent = 'กรุณาพิมพ์ข้อความที่ต้องการให้อ่านก่อนนะคะ!';
+                    return; // Stop execution
+                }
 
-                // Display status that it's currently speaking
-                statusMessage.textContent = 'กำลังอ่านข้อความ...';
-                
-                // Command ResponsiveVoice to speak the text
-                // Parameters:
-                // 1. Text to speak (textToSpeak)
-                // 2. Desired voice name (here, 'Thai Female' for a Thai female voice)
-                // 3. Object for additional settings (e.g., onend, onerror)
-                responsiveVoice.speak(textToSpeak, 'Thai Female', {
-                    onend: () => {
-                        // This function runs when ResponsiveVoice finishes speaking
-                        statusMessage.textContent = 'อ่านจบแล้วค่ะ!';
-                    },
-                    onerror: (e) => {
-                        // This function runs if an error occurs during speech
-                        statusMessage.textContent = 'เกิดข้อผิดพลาดในการอ่าน: ' + e.message;
-                        console.error('ResponsiveVoice error:', e);
-                    }
-                });
-            });
+                // Display status that it's currently speaking
+                statusMessage.textContent = 'กำลังอ่านข้อความ...';
+                
+                // Command ResponsiveVoice to speak the text
+                // Parameters:
+                // 1. Text to speak (textToSpeak)
+                // 2. Desired voice name (here, 'Thai Female' for a Thai female voice)
+                // 3. Object for additional settings (e.g., onend, onerror)
+                responsiveVoice.speak(textToSpeak, 'Thai Female', {
+                    onend: () => {
+                        // This function runs when ResponsiveVoice finishes speaking
+                        statusMessage.textContent = 'อ่านจบแล้วค่ะ!';
+                    },
+                    onerror: (e) => {
+                        // This function runs if an error occurs during speech
+                        statusMessage.textContent = 'เกิดข้อผิดพลาดในการอ่าน: ' + e.message;
+                        console.error('ResponsiveVoice error:', e);
+                    }
+                });
+            });
 
-            // Add event listener for the "Clear Text" button click
-            clearButton.addEventListener('click', () => {
-                // Cancel any ongoing speech
-                if (typeof responsiveVoice !== 'undefined') {
-                    responsiveVoice.cancel();
-                }
-                speechText.value = ''; // Clear text in the input field
-                statusMessage.textContent = 'ข้อความถูกล้างแล้วค่ะ!'; // Update status
-            });
-        });
-    </script>
+            // Add event listener for the "Clear Text" button click
+            clearButton.addEventListener('click', () => {
+                // Cancel any ongoing speech
+                if (typeof responsiveVoice !== 'undefined') {
+                    responsiveVoice.cancel();
+                }
+                speechText.value = ''; // Clear text in the input field
+                statusMessage.textContent = 'ข้อความถูกล้างแล้วค่ะ!'; // Update status
+            });
+        });
+    </script>
 </body>
 </html>
 
