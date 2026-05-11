@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -6,8 +7,13 @@
     <title>TheMuiz อ่านออกเสียง</title>
     <!-- Load Tailwind CSS for styling and responsiveness -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load ResponsiveVoice API for text-to-speech, with the provided API key -->
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=Negu9VLC"></script>
+    
+    <!-- Scripts for ResponsiveVoice with different API keys -->
+    <!-- API ตัวเดิม (เสียงผู้หญิง) -->
+    <script id="voice-female" src="https://code.responsivevoice.org/responsivevoice.js?key=Negu9VLC"></script>
+    <!-- API ตัวใหม่ที่ส่งมา (เสียงผู้ชาย) -->
+    <script id="voice-male" src="https://code.responsivevoice.org/responsivevoice.js?key=6uRDqcc4"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -26,7 +32,7 @@
             min-height: 1.5rem;
         }
         #speechText {
-            max-height: 50vh;
+            max-height: 45vh;
             overflow-y: auto;
             flex-grow: 1;
         }
@@ -38,6 +44,12 @@
             align-items: center;
             width: 100%;
             max-width: 28rem;
+        }
+        /* Style for active voice selection */
+        .voice-option.active {
+            border-color: #3b82f6;
+            background-color: #1e3a8a;
+            color: white;
         }
     </style>
 </head>
@@ -55,9 +67,28 @@
         <textarea
             id="speechText"
             class="w-full p-4 mb-4 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows="8"
+            rows="6"
             placeholder="พิมพ์ข้อความที่นี่เลยค่ะ..."
         ></textarea>
+
+        <!-- Voice Selection Area -->
+        <div class="w-full mb-6">
+            <p class="text-sm text-gray-400 mb-2 text-center">เลือกเสียงที่ต้องการ:</p>
+            <div class="flex space-x-2">
+                <button 
+                    id="selectFemale" 
+                    class="voice-option active flex-1 py-2 px-4 rounded-lg border border-gray-600 bg-gray-700 text-sm transition-all duration-200"
+                >
+                    👩 เสียงผู้หญิง
+                </button>
+                <button 
+                    id="selectMale" 
+                    class="voice-option flex-1 py-2 px-4 rounded-lg border border-gray-600 bg-gray-700 text-sm transition-all duration-200"
+                >
+                    👨 เสียงผู้ชาย
+                </button>
+            </div>
+        </div>
 
         <!-- Status message display area -->
         <p id="statusMessage" class="text-center text-gray-400 mb-6 text-sm"></p>
@@ -85,11 +116,8 @@
     </footer>
 
     <script>
-        // ฟังก์ชันนี้เอาไว้กรองเอาเฉพาะตัวหนังสือ (เว้นวรรค/บรรทัดใหม่/ตัวอักษร) ที่เป็น readable text
+        // ฟังก์ชันสำหรับกรองอักขระ
         function filterTextToSpeak(text) {
-            // กรองเฉพาะตัวอักษรไทย, อังกฤษ, ตัวเลข, เว้นวรรค, ขึ้นบรรทัดใหม่
-            // ตัดอักขระพิเศษ เช่น !@#$%^&*()_+-=[]{};':",.<>/?
-            // คุณสามารถปรับแก้ pattern เพื่อรองรับภาษาอื่นและกรณีที่ต้องการ
             return text.replace(/[^ก-๙a-zA-Z0-9\s\n]/g, '');
         }
 
@@ -98,12 +126,33 @@
             const speakButton = document.getElementById('speakButton');
             const clearButton = document.getElementById('clearButton');
             const statusMessage = document.getElementById('statusMessage');
+            
+            // Voice selection elements
+            const btnFemale = document.getElementById('selectFemale');
+            const btnMale = document.getElementById('selectMale');
+            
+            let selectedVoice = 'Thai Female'; // Default เป็นเสียงผู้หญิง
+
+            // จัดการการเลือกเสียง
+            btnFemale.addEventListener('click', () => {
+                selectedVoice = 'Thai Female';
+                btnFemale.classList.add('active');
+                btnMale.classList.remove('active');
+                statusMessage.textContent = 'เลือกโหมดเสียงผู้หญิงแล้วค่ะ';
+            });
+
+            btnMale.addEventListener('click', () => {
+                selectedVoice = 'Thai Male';
+                btnMale.classList.add('active');
+                btnFemale.classList.remove('active');
+                statusMessage.textContent = 'เลือกโหมดเสียงผู้ชายแล้วค่ะ';
+            });
+
             speechText.value = "";
 
             speakButton.addEventListener('click', () => {
                 if (typeof responsiveVoice === 'undefined') {
-                    statusMessage.textContent = 'ResponsiveVoice ยังไม่พร้อมใช้งาน กรุณาลองใหม่ในอีกสักครู่ค่ะ';
-                    console.error('ResponsiveVoice library not loaded.');
+                    statusMessage.textContent = 'ระบบเสียงยังไม่พร้อมใช้งาน กรุณาลองใหม่ในอีกสักครู่ค่ะ';
                     return;
                 }
 
@@ -114,7 +163,6 @@
                     return;
                 }
 
-                // ฟิลเตอร์ข้อความก่อนพูด
                 const filteredText = filterTextToSpeak(textToSpeak);
 
                 if (filteredText === '') {
@@ -122,14 +170,15 @@
                     return;
                 }
 
-                statusMessage.textContent = 'กำลังอ่านข้อความ...';
+                statusMessage.textContent = `กำลังอ่านด้วย${selectedVoice === 'Thai Female' ? 'เสียงผู้หญิง' : 'เสียงผู้ชาย'}...`;
 
-                responsiveVoice.speak(filteredText, 'Thai Female', {
+                // เรียกใช้งาน API ตามเสียงที่เลือก
+                responsiveVoice.speak(filteredText, selectedVoice, {
                     onend: () => {
                         statusMessage.textContent = 'อ่านจบแล้วค่ะ!';
                     },
                     onerror: (e) => {
-                        statusMessage.textContent = 'เกิดข้อผิดพลาดในการอ่าน: ' + e.message;
+                        statusMessage.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
                         console.error('ResponsiveVoice error:', e);
                     }
                 });
@@ -146,3 +195,5 @@
     </script>
 </body>
 </html>
+
+```
