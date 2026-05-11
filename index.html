@@ -32,7 +32,7 @@
             min-height: 1.5rem;
         }
         #speechText {
-            max-height: 45vh;
+            max-height: 40vh;
             overflow-y: auto;
             flex-grow: 1;
         }
@@ -45,7 +45,6 @@
             width: 100%;
             max-width: 28rem;
         }
-        /* Style for active voice selection */
         .voice-option.active {
             border-color: #3b82f6;
             background-color: #1e3a8a;
@@ -55,15 +54,12 @@
 </head>
 <body class="bg-gray-900 text-white">
 
-    <!-- Web page header section -->
     <header class="text-center mb-4 mt-4">
         <h1 class="text-5xl font-extrabold text-white mb-2">TheMuiz</h1>
         <h2 class="text-3xl font-semibold text-white">อ่านออกเสียง</h2>
     </header>
 
-    <!-- Main container for the application -->
     <div class="bg-gray-800 p-8 rounded-2xl shadow-lg w-full main-content-area">
-        <!-- Text input area -->
         <textarea
             id="speechText"
             class="w-full p-4 mb-4 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
@@ -71,7 +67,6 @@
             placeholder="พิมพ์ข้อความที่นี่เลยค่ะ..."
         ></textarea>
 
-        <!-- Voice Selection Area -->
         <div class="w-full mb-6">
             <p class="text-sm text-gray-400 mb-2 text-center">เลือกเสียงที่ต้องการ:</p>
             <div class="flex space-x-2">
@@ -90,33 +85,37 @@
             </div>
         </div>
 
-        <!-- Status message display area -->
         <p id="statusMessage" class="text-center text-gray-400 mb-6 text-sm"></p>
 
-        <!-- Buttons for actions -->
-        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 w-full">
-            <button
-                id="speakButton"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-                อ่านออกเสียงเลย!
-            </button>
+        <div class="flex flex-col space-y-4 w-full">
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full">
+                <button
+                    id="speakButton"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    อ่านออกเสียงเลย!
+                </button>
+                <button
+                    id="pauseButton"
+                    class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+                    หยุดพัก/อ่านต่อ
+                </button>
+            </div>
             <button
                 id="clearButton"
-                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500"
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
                 ล้างข้อความ
             </button>
         </div>
     </div>
 
-    <!-- Creator credit footer -->
     <footer class="mt-4 mb-4 text-gray-500 text-sm">
         Creator: TheMuiz × หนูมะลิ
     </footer>
 
     <script>
-        // ฟังก์ชันสำหรับกรองอักขระ
         function filterTextToSpeak(text) {
             return text.replace(/[^ก-๙a-zA-Z0-9\s\n]/g, '');
         }
@@ -124,21 +123,23 @@
         document.addEventListener('DOMContentLoaded', () => {
             const speechText = document.getElementById('speechText');
             const speakButton = document.getElementById('speakButton');
+            const pauseButton = document.getElementById('pauseButton');
             const clearButton = document.getElementById('clearButton');
             const statusMessage = document.getElementById('statusMessage');
-            
-            // Voice selection elements
             const btnFemale = document.getElementById('selectFemale');
             const btnMale = document.getElementById('selectMale');
             
-            let selectedVoice = 'Thai Female'; // Default เป็นเสียงผู้หญิง
+            let selectedVoice = 'Thai Female';
+            let isPaused = false;
+            let currentTextArray = [];
+            let currentIndex = 0;
 
-            // จัดการการเลือกเสียง
             btnFemale.addEventListener('click', () => {
                 selectedVoice = 'Thai Female';
                 btnFemale.classList.add('active');
                 btnMale.classList.remove('active');
                 statusMessage.textContent = 'เลือกโหมดเสียงผู้หญิงแล้วค่ะ';
+                stopSpeaking();
             });
 
             btnMale.addEventListener('click', () => {
@@ -146,50 +147,81 @@
                 btnMale.classList.add('active');
                 btnFemale.classList.remove('active');
                 statusMessage.textContent = 'เลือกโหมดเสียงผู้ชายแล้วค่ะ';
+                stopSpeaking();
             });
 
-            speechText.value = "";
-
-            speakButton.addEventListener('click', () => {
-                if (typeof responsiveVoice === 'undefined') {
-                    statusMessage.textContent = 'ระบบเสียงยังไม่พร้อมใช้งาน กรุณาลองใหม่ในอีกสักครู่ค่ะ';
-                    return;
-                }
-
-                const textToSpeak = speechText.value.trim();
-
-                if (textToSpeak === '') {
-                    statusMessage.textContent = 'กรุณาพิมพ์ข้อความที่ต้องการให้อ่านก่อนนะคะ!';
-                    return;
-                }
-
-                const filteredText = filterTextToSpeak(textToSpeak);
-
-                if (filteredText === '') {
-                    statusMessage.textContent = 'ไม่มีเนื้อหาที่เป็นตัวหนังสือให้อ่านออกเสียงค่ะ!';
-                    return;
-                }
-
-                statusMessage.textContent = `กำลังอ่านด้วย${selectedVoice === 'Thai Female' ? 'เสียงผู้หญิง' : 'เสียงผู้ชาย'}...`;
-
-                // เรียกใช้งาน API ตามเสียงที่เลือก
-                responsiveVoice.speak(filteredText, selectedVoice, {
-                    onend: () => {
-                        statusMessage.textContent = 'อ่านจบแล้วค่ะ!';
-                    },
-                    onerror: (e) => {
-                        statusMessage.textContent = 'เกิดข้อผิดพลาด: ' + e.message;
-                        console.error('ResponsiveVoice error:', e);
-                    }
-                });
-            });
-
-            clearButton.addEventListener('click', () => {
+            function stopSpeaking() {
                 if (typeof responsiveVoice !== 'undefined') {
                     responsiveVoice.cancel();
                 }
+                isPaused = false;
+                currentIndex = 0;
+            }
+
+            function playFromIndex(index) {
+                if (index >= currentTextArray.length) {
+                    statusMessage.textContent = 'อ่านจบแล้วค่ะ!';
+                    isPaused = false;
+                    currentIndex = 0;
+                    return;
+                }
+
+                currentIndex = index;
+                const partToSpeak = currentTextArray[currentIndex];
+                
+                responsiveVoice.speak(partToSpeak, selectedVoice, {
+                    onend: () => {
+                        if (!isPaused) {
+                            playFromIndex(currentIndex + 1);
+                        }
+                    }
+                });
+            }
+
+            speakButton.addEventListener('click', () => {
+                if (typeof responsiveVoice === 'undefined') {
+                    statusMessage.textContent = 'ระบบยังไม่พร้อมใช้งานค่ะ';
+                    return;
+                }
+
+                const rawText = speechText.value.trim();
+                if (!rawText) {
+                    statusMessage.textContent = 'กรุณาพิมพ์ข้อความก่อนนะจ๊ะ!';
+                    return;
+                }
+
+                const filteredText = filterTextToSpeak(rawText);
+                // แยกข้อความออกเป็นส่วนๆ ตามประโยคหรือช่องว่างเพื่อให้หยุดพักได้แม่นยำขึ้น
+                currentTextArray = filteredText.split(/([。！？.!?\n])/).filter(s => s.trim().length > 0);
+                
+                if (currentTextArray.length === 0) {
+                    currentTextArray = [filteredText];
+                }
+
+                stopSpeaking();
+                statusMessage.textContent = `กำลังเริ่มอ่านด้วย${selectedVoice === 'Thai Female' ? 'เสียงผู้หญิง' : 'เสียงผู้ชาย'}...`;
+                playFromIndex(0);
+            });
+
+            pauseButton.addEventListener('click', () => {
+                if (typeof responsiveVoice === 'undefined' || currentTextArray.length === 0) return;
+
+                if (responsiveVoice.isPlaying()) {
+                    // ใช้ cancel เพื่อให้หยุดทันที ไม่ไหลต่อ
+                    responsiveVoice.cancel();
+                    isPaused = true;
+                    statusMessage.textContent = 'หยุดพักแล้วค่ะ';
+                } else if (isPaused) {
+                    isPaused = false;
+                    statusMessage.textContent = 'กำลังอ่านต่อค่ะ...';
+                    playFromIndex(currentIndex);
+                }
+            });
+
+            clearButton.addEventListener('click', () => {
+                stopSpeaking();
                 speechText.value = '';
-                statusMessage.textContent = 'ข้อความถูกล้างแล้วค่ะ!';
+                statusMessage.textContent = 'ล้างข้อความเรียบร้อยค่ะ';
             });
         });
     </script>
