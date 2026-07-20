@@ -59,12 +59,15 @@
     </header>
 
     <div class="bg-gray-800 p-8 rounded-2xl shadow-lg w-full main-content-area">
-        <textarea
-            id="speechText"
-            class="w-full p-4 mb-4 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows="5"
-            placeholder="พิมพ์ข้อความที่นี่เลยค่ะ..."
-        ></textarea>
+        <div class="relative w-full mb-4">
+            <textarea
+                id="speechText"
+                class="w-full p-4 pb-7 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                rows="5"
+                placeholder="พิมพ์ข้อความที่นี่เลยค่ะ..."
+            ></textarea>
+            <span id="charCount" class="absolute bottom-2 right-3 text-xs text-gray-400 pointer-events-none">0</span>
+        </div>
 
         <!-- Voice Selection Area -->
         <div class="w-full mb-4">
@@ -107,6 +110,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const speechText = document.getElementById('speechText');
+            const charCount = document.getElementById('charCount');
             const speakButton = document.getElementById('speakButton');
             const pauseButton = document.getElementById('pauseButton');
             const clearButton = document.getElementById('clearButton');
@@ -123,6 +127,11 @@
             let isPaused = false;
             let currentTextArray = [];
             let currentIndex = 0;
+
+            // อัปเดตจำนวนตัวอักษรเรียลไทม์
+            speechText.addEventListener('input', () => {
+                charCount.textContent = speechText.value.length;
+            });
 
             function updateUI(activeBtn, otherBtns) {
                 activeBtn.classList.add('active');
@@ -232,7 +241,12 @@
                 }
             });
 
-            clearButton.addEventListener('click', () => { stopSpeaking(); speechText.value = ''; statusMessage.textContent = 'ล้างข้อความเรียบร้อยค่ะ'; });
+            clearButton.addEventListener('click', () => { 
+                stopSpeaking(); 
+                speechText.value = ''; 
+                charCount.textContent = '0';
+                statusMessage.textContent = 'ล้างข้อความเรียบร้อยค่ะ'; 
+            });
         });
     </script>
 </body>
